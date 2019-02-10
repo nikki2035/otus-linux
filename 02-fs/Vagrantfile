@@ -35,6 +35,7 @@ MACHINES = {
 
 Vagrant.configure("2") do |config|
 
+    config.vm.box_version = "1804.02"
     MACHINES.each do |boxname, boxconfig|
   
         config.vm.define boxname do |box|
