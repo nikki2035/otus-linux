@@ -5,16 +5,21 @@
 # Домашняя работа
 
 ## Запись работы и подключение к виртуалке
-```
+
+```bash
 script -aq
 vagrant ssh
 sudo su
 yum -y install xfsdump
 ```
+
 # Работа с файловой системой
+
 ## Уменьшить том под / до 8G
+
 ### Создать новый раздел и переместить туда /
-```
+
+```bash
 lsblk
 pvcreate /dev/sdb
 vgcreate vg_root /dev/sdb
@@ -28,16 +33,19 @@ chroot /mnt/
 grub2-mkconfig -o /boot/grub2/grub.cfg
 cd /boot ; for i in `ls initramfs-*img`; do dracut -v $i `echo $i|sed "s/initramfs-//g; s/.img//g"` --force; done
 ```
+
 в файле /boot/grub2/grub.cfg
 
 заменить rd.lvm.lv=VolGroup00/LogVol00 на rd.lvm.lv=vg_root/lv_root
-```
+
+```bash
 exit
 reboot
 ```
+
 ### Пересоздать раздел и переместить / обратно
 
-```
+```bash
 vagrant ssh
 sudo su
 lsblk
@@ -52,13 +60,17 @@ chroot /mnt/
 grub2-mkconfig -o /boot/grub2/grub.cfg
 cd /boot ; for i in `ls initramfs-*img`; do dracut -v $i `echo $i|sed "s/initramfs-//g; s/.img//g"` --force; done
 ```
+
 ## выделить том под /var
-```
+
+```bash
 pvcreate /dev/sdc /dev/sdd
 vgcreate vg_var /dev/sdc /dev/sdd
 ```
+
 ## /var - сделать в mirror
-```
+
+```bash
 lvcreate -L 950M -m1 -n lv_var vg_var
 mkfs.ext4 /dev/vg_var/lv_var
 mount /dev/vg_var/lv_var /mnt
@@ -70,8 +82,10 @@ echo "`blkid | grep var: | awk '{print $2}'` /var ext4 defaults 0 0" >> /etc/fst
 exit
 reboot
 ```
+
 ## выделить том под /home
-```
+
+```bash
 sudo su
 lvremove /dev/vg_root/lv_root
 vgremove /dev/vg_root
@@ -84,24 +98,34 @@ rm -rf /home/*
 umount /mnt
 mount /dev/VolGroup00/LogVol_Home /home/
 ```
+
 ## прописать монтирование в fstab
-```
+
+```bash
 echo "`blkid | grep Home | awk '{print $2}'` /home xfs defaults 0 0" >> /etc/fstab
 ```
+
 ### cгенерить файлы в /home/
-```
+
+```bash
 touch /home/file{1..20}
 ```
+
 ## /home - сделать том для снэпшотов
-```
+
+```bash
 lvcreate -L 100MB -s -n home_snap /dev/VolGroup00/LogVol_Home
 ```
+
 ### удалить часть файлов
-```
+
+```bash
 rm -f /home/file{11..20}
 ```
+
 ### восстановится со снэпшота
-```
+
+```bash
 lvscan
 
   ACTIVE            '/dev/VolGroup00/LogVol01' [1.50 GiB] inherit
