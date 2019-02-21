@@ -26,9 +26,9 @@ tar -xvf latest.tar.gz
 yum-builddep rpmbuild/SPECS/nginx.spec
 ```
 Ну и собственно поправить сам spec файл чтобы NGINX собирался с необходимыми нам опциями:
-
+```
 sed -i 's|--with-debug|--with-openssl=/root/openssl-1.1.1a|' /root/rpmbuild/SPECS/nginx.spec
-
+```
 Теперь можно приступитьþ к сборке RPM пакета:
 ```
 rpmbuild -bb rpmbuild/SPECS/nginx.spec
