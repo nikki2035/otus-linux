@@ -1,0 +1,87 @@
+# -*- mode: ruby -*-
+# vim: set ft=ruby :
+
+home = ENV['HOME']
+ENV["LC_ALL"] = "en_US.UTF-8"
+
+MACHINES = {
+  :systemd => {
+        :box_name => "centos/7",
+        :box_version => "1804.02",
+        :ip_addr => '192.168.11.101',
+  },
+}
+
+Vagrant.configure("2") do |config|
+
+    config.vm.box_version = "1804.02"
+    MACHINES.each do |boxname, boxconfig|
+  
+        config.vm.define boxname do |box|
+  
+            box.vm.box = boxconfig[:box_name]
+            box.vm.host_name = boxname.to_s
+  
+            #box.vm.network "forwarded_port", guest: 3260, host: 3260+offset
+  
+            box.vm.network "private_network", ip: boxconfig[:ip_addr]
+  
+            box.vm.provider :virtualbox do |vb|
+                    vb.customize ["modifyvm", :id, "--memory", "256"]
+                    needsController = false
+            end
+  
+        box.vm.provision "shell", inline: <<-SHELL
+            mkdir -p ~root/.ssh
+            cp ~vagrant/.ssh/auth* ~root/.ssh
+
+            yum install -y epel-release && yum install -y spawn-fcgi php php-cli mod_fcgid httpd
+
+            #создаем файл с конфигурацией
+            echo 'WORD="alarm"' > /etc/sysconfig/watchlog
+            echo 'LOG=/var/log/watchlog.log' >> /etc/sysconfig/watchlog
+
+            #Создаем файл лога и пишем в него инфо
+            echo "Some of us have a burglar alarm system at home, and some of us don't." > /var/log/watchlog.log
+
+            #Создаем скрипт
+            touch /opt/watchlog.sh
+            chmod +x /opt/watchlog.sh
+            echo '#!/bin/bash' >> /opt/watchlog.sh
+            echo 'WORD=$1' >> /opt/watchlog.sh
+            echo 'LOG=$2' >> /opt/watchlog.sh
+            echo 'DATE=`date`' >> /opt/watchlog.sh
+            echo 'if [ "grep $WORD $LOG &> /dev/null" ];' >> /opt/watchlog.sh
+            echo 'then' >> /opt/watchlog.sh
+            echo 'logger "$DATE: I found word, Master!"' >> /opt/watchlog.sh
+            echo 'else' >> /opt/watchlog.sh
+            echo 'exit 0' >> /opt/watchlog.sh
+            echo 'fi' >> /opt/watchlog.sh
+
+            #Создаем юнит для теста
+            touch /etc/systemd/system/watchlog.service
+            echo '[Unit]' >> /etc/systemd/system/watchlog.service
+            echo 'Description=My watchlog service' >> /etc/systemd/system/watchlog.service
+            echo '[Service]' >> /etc/systemd/system/watchlog.service
+            echo 'Type=oneshot' >> /etc/systemd/system/watchlog.service
+            echo 'EnvironmentFile=/etc/sysconfig/watchlog' >> /etc/systemd/system/watchlog.service
+            echo 'ExecStart=/opt/watchlog.sh $WORD $LOG' >> /etc/systemd/system/watchlog.service
+
+            #Создаем юнит для таймера
+            touch /etc/systemd/system/watchlog.timer
+            echo '[Unit]' >> /etc/systemd/system/watchlog.timer
+            echo 'Description=Run watchlog script every 30 second' >> /etc/systemd/system/watchlog.timer
+            echo '[Timer]' >> /etc/systemd/system/watchlog.timer
+            echo 'OnCalendar=*:*:0/30' >> /etc/systemd/system/watchlog.timer
+            echo 'Unit=watchlog.service' >> /etc/systemd/system/watchlog.timer
+            echo '[Install]' >> /etc/systemd/system/watchlog.timer
+            echo 'WantedBy=multi-user.target' >> /etc/systemd/system/watchlog.timer
+
+
+
+
+          SHELL
+        end
+    end
+  end
+  
