@@ -24,5 +24,3 @@ for num_pid in `find /proc -maxdepth 1 -name "[1-9]*" -type d `
         printf "%s\t%s\t%s\t%s\t%s\n" $pid $tty $stat $time $cmdline
     done
 }
-
-printf "PID\tTTY\tSTAT\tCOMMAND\n"
