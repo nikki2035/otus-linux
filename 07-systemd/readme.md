@@ -271,10 +271,22 @@ systemctl daemon-reload
 systemctl start jira
 systemctl enable jira
 systemctl status jira
+jira.service - JIRA Service
+   Loaded: loaded (/usr/lib/systemd/system/jira.service; disabled; vendor preset: disabled)
+   Active: active (running) since Tue 2019-03-19 15:37:42 UTC; 1min 28s ago
+  Process: 21636 ExecStop=/opt/atlassian/jira/bin/stop-jira.sh (code=exited, status=1/FAILURE)
+  Process: 21711 ExecStart=/opt/atlassian/jira/bin/start-jira.sh (code=exited, status=0/SUCCESS)
+ Main PID: 21746 (java)
+   CGroup: /system.slice/jira.service
+           └─21746 /opt/atlassian/jira/jre//bin/java -Djava.util.logging.config.file=/opt/atlassian/jira/conf/logging.properties -Djava.util.loggin...
+
 ```
 
 Можно проверить, что jira слушает порт 8081:
 
 ```
 ss -tnulp | grep java
+tcp    LISTEN     0      1      ::ffff:127.0.0.1:8005                 :::*                   users:(("java",pid=21746,fd=306))
+tcp    LISTEN     0      100      :::8081                 :::*                   users:(("java",pid=21746,fd=297))
+
 ```
