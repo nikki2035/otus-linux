@@ -25,4 +25,4 @@ for num_pid in `find /proc -maxdepth 1 -name "[1-9]*" -type d `
     done
 }
 
-printf "PID\tTTY\tSTAT\tCOMMAND\n"
+#printf "PID\tTTY\tSTAT\tCOMMAND\n"
