@@ -4,9 +4,20 @@
 - после установки nginx должен быть в режиме enabled в systemd
 - должен быть использован notify для старта nginx после установки
 - сайт должен слушать на нестандартном порту - 8080, для этого использовать переменные в Ansible
+
+# Выполнение
+
+```
+vagrant up
+ansible-playbook playbooks/nginx.yml
+curl http://192.168.11.151:8080
+```
+
 * Сделать все это с использованием Ansible роли
 
-# Установка Ansible
+# Описание
+
+## Установка Ansible
 
 Версия Ansible =>2.4 требует для своей работы Python 2.6 или выше
 
@@ -23,13 +34,13 @@ ansible --version
 ansible 2.7.10
 ```
 
-# Настройка Ansible
+## Настройка Ansible
 
 Для управления хостами Ansible использует SSH соединение. Поэтому перед стартом необходимо убедиться что у Вас есть доступ до управляемых хостов.
 
 Также на управляемых хостах должен быть установлен Python 2.X
 
-## Подготовка окружения
+### Подготовка окружения
 
 Для подключения к хосту nginx нам необходимо будет передать множество
 параметров - это особенность Vagrant. Узнать эти параметры можно с
@@ -99,7 +110,7 @@ host1 | SUCCESS => {
 }
 ```
 
-## Ad-Hoc команды
+### Ad-Hoc команды
 
 Посмотрим какое ядро установлено на хосте
 
@@ -133,7 +144,7 @@ host1 | CHANGED => {
     "changed": true,
 ```
 
-## Playbook
+### Playbook
 
 Создадим playbooks/epel.yml со следуящим содержимым:
 
@@ -323,96 +334,13 @@ host2                      : ok=6    changed=2    unreachable=0    failed=0
 
 ```
 curl http://192.168.11.151:8080
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
-"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
-<head>
- <title>Test Page for the Nginx HTTP Server on Fedora</title>
- <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
- <style type="text/css">
- /*<![CDATA[*/
- body {
-...
-Переводим в Роль
-Тестирование роли с Molecule
-
-
-
-
-
-
-# Описание
-
-Стенд для практики к уроку «Автоматизация администрирования. Ansible.»  
-
-Разворачивается два сервера: `host1` и `host2`. При развертывании Vagrant запускается Ansible [playbook](provisioning/playbook.yml). 
-
-# Инструкция по применению
-## Перед запуском
-
-Если вы еще не настроили Vagrant и VirtualBox, то вот краткая [инструкция](https://gitlab.com/otus_linux/docs/blob/master/vagrant_quick_start.md).
-
-Далее необходимо установить Ansible. Это можно сделать по [инструкции](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html#latest-release-via-dnf-or-yum). Или достаточно: `yum install ansible`
-
-Проверим что Ansible установлен: `ansible --version`
-
-Все дальнейшие действия нужно делать из текущего каталога.
-
-## Запускаем и работаем со стендом
-
-Поднимем виртуальные машины: `vagrant up`
-
-Запустим роль: `ansible-playbook fail2ban.yml`  
-Так выглядит основной playbook `fail2ban.yml`, который уже в свою очередь ссылается на роль `fail2ban`:
-```yml
-- name: Fail2Ban # Имя таски
-  hosts: all # На каких хостах будет выполняться
-  become: True # Нужно ли нам sudo
-  roles: # Директива, указывающая, что будут использваоны роли
-    - fail2ban # Имя роли по каталогу
-```
-
-Если мы поправили конфигурационные файлы и хотим их заново скопировать на сервера:
-`ansible-playbook fail2ban.yml --tags "configuration"`
-
-Что еще можно попробовать:
-```bash
-ansible all -m ping # Пингануть сервера Ansibl-ом
-ansible all -m setup # Собрать данные с серверов
-ansible all -m setup -a 'filter=ansible_eth[0-2]' # Собрать данные и показать только сетевые интефейсы eth[0-2]
-ansible all -m setup -a 'filter=ansible_os_family' # Собрать данные и показать только семейство ОС
-ansible all -a 'uname -r' # Выполнить произвольную команду на серверах
-```
-
-# Некоторые полезные команды
-
-Создать дерево каталогов для роли:
-```bash
-ansible-galaxy init <rolename> 
-```
-
-Получить документацию по модулю:
-```bash
-ansible-doc <modulename>
-```
-
-Проверить синтаксис:
-```bash
-ansible-playbook fail2ban.yml --syntax-check
-```
-
-Посмотреть список хостов на которых будет выполняться роль. При этом сами 
-таски не выполняются.
-```bash
-ansible-playbook fail2ban.yml --list-hosts
-```
-
-Посмотреть все таски, которые входят в роль:
-```bash
-ansible-playbook fail2ban.yml --list-tasks
-```
-
-Посмотреть все теги в роли:
-```bash
-ansible-playbook fail2ban.yml --list-tags
+    <head>
+        <title>Test Page for the Nginx HTTP Server on Fedora</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <style type="text/css">
+            /*<![CDATA[*/
+            body {
 ```
