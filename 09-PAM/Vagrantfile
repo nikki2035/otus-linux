@@ -35,15 +35,13 @@ Vagrant.configure("2") do |config|
             useradd friday
             echo "Otus2019" | sudo passwd --stdin day
             echo "Otus2019" | sudo passwd --stdin friday
-            groupadd admin
-            usermod -aG admin day
-            cp /vagrant/sshd /etc/pam.d/
+            cp /vagrant/sshd /etc/pam.d//e  
             cp /vagrant/login /etc/pam.d/
+            cp /vagrant/su /etc/pam.d/
+            echo -e "* ; * ; day|friday ; Wk0000-2400" >> /etc/security/time.conf
             cp /vagrant/capability.conf /etc/security/
             setcap cap_net_bind_service=ei /usr/bin/ncat
-#            cp /vagrant/su /etc/pam.d/
-#            cp /vagrant/pam_script /etc/
-#            systemctl restart sshd
+            systemctl restart sshd
          SHELL
         end
     end
