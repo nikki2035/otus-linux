@@ -1,0 +1,47 @@
+home = ENV['HOME']
+ENV["LC_ALL"] = "en_US.UTF-8"
+ 
+Vagrant.configure(2) do |config|
+
+    config.vm.box = "centos/7"
+    config.vm.provider "virtualbox" do |vb|
+      vb.memory = 4096
+    end
+
+    config.vm.define "freeipa-server" do |box|
+        
+        box.vm.hostname = "freeipa-server"
+        box.vm.network :private_network, ip: "192.168.11.101"
+        box.vm.provision "shell", inline: <<-SHELL
+        mkdir -p ~root/.ssh
+        cp ~vagrant/.ssh/auth* ~root/.ssh
+        hostnamectl set-hostname freeipa-server.otus.local
+        yum -y update
+        echo "192.168.11.102 freeipa-client.otus.local freeipa-client" >> /etc/hosts
+        ntpdate 1.ru.pool.ntp.org
+        mv /etc/localtime /etc/localtime.bak
+        ln -s /usr/share/zoneinfo/Europe/Moscow /etc/localtime
+        SHELL
+        
+        box.vm.provision "ansible" do |ansible|
+            ansible.playbook = "playbooks/ipa-server.yml"
+        end
+    end
+
+    config.vm.define "freeipa-client" do |box|
+        box.vm.hostname = "freeipa-client"
+        box.vm.network :private_network, ip: "192.168.11.102"
+        box.vm.provision "shell", inline: <<-SHELL
+        mkdir -p ~root/.ssh
+        cp ~vagrant/.ssh/auth* ~root/.ssh
+        hostnamectl set-hostname freeipa-client.otus.local
+        yum -y update
+        echo "192.168.11.101 freeipa-server.otus.local freeipa-server" >> /etc/hosts
+        echo "192.168.11.102 freeipa-client.otus.local freeipa-client" >> /etc/hosts
+        SHELL
+
+        box.vm.provision "ansible" do |ansible|
+            ansible.playbook = "playbooks/ipa-client.yml"
+        end
+    end
+end
